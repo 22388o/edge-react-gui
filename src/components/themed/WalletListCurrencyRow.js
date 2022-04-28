@@ -1,6 +1,6 @@
 // @flow
-
 import { abs, div, gt, log10, mul, sub, toFixed } from 'biggystring'
+import { useCavy } from 'cavy'
 import { type EdgeDenomination } from 'edge-core-js'
 import * as React from 'react'
 import { TouchableOpacity, View } from 'react-native'
@@ -125,6 +125,7 @@ export const WalletListCurrencyRowComponent = (props: Props) => {
   const dispatch = useDispatch()
   const theme = useTheme()
   const styles = getStyles(theme)
+  const generateTestHook = useCavy()
 
   const edgeWallet = useSelector(state => state.core.account.currencyWallets[walletId])
   const exchangeRates = useSelector(state => state.exchangeRates)
