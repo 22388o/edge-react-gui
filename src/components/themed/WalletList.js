@@ -1,7 +1,8 @@
 // @flow
 
+import { useCavy, wrap } from 'cavy'
 import * as React from 'react'
-import { FlatList, RefreshControl, SectionList } from 'react-native'
+import { RefreshControl, SectionList } from 'react-native'
 
 import { selectWallet } from '../../actions/WalletActions.js'
 import { useAllTokens } from '../../hooks/useAllTokens.js'
@@ -10,6 +11,7 @@ import s from '../../locales/strings'
 import { getExchangeDenominationFromState } from '../../selectors/DenominationSelectors.js'
 import { calculateFiatBalance } from '../../selectors/WalletSelectors.js'
 import { useMemo } from '../../types/reactHooks.js'
+import { FlatList } from '../../types/reactNative.js'
 import { useDispatch, useSelector } from '../../types/reactRedux.js'
 import type { CreateTokenType, CreateWalletType, EdgeTokenIdExtended, FlatListItem, GuiWallet } from '../../types/types.js'
 import { asSafeDefaultGuiWallet } from '../../types/types.js'
@@ -63,6 +65,7 @@ type Props = {|
 |}
 
 export function WalletList(props: Props) {
+export function WalletListComponent(props: Props) {
   const dispatch = useDispatch()
   const {
     allowedCurrencyCodes,
@@ -86,6 +89,7 @@ export function WalletList(props: Props) {
   const theme = useTheme()
   const margin = sidesToMargin(mapSides(fixSides(marginRem, 0), theme.rem))
 
+  const generateTestHook = useCavy()
   const handlePress = useMemo(
     () =>
       onPress ??
@@ -375,7 +379,10 @@ export function WalletList(props: Props) {
       ListHeaderComponent={header}
       refreshControl={isModal ? undefined : renderRefreshControl()}
       renderItem={renderRow}
+      ref={generateTestHook('WalletList.WalletId')}
       style={margin}
     />
   )
 }
+
+export const WalletList = wrap(WalletListComponent)
