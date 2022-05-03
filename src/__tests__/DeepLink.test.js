@@ -26,42 +26,79 @@ describe('parseDeepLink', function () {
 
   describe('requestAddress', () => {
     makeLinkTests({
-      'edge://reqaddr?codes=eth-btc&post=testpost.com': {
+      'edge://reqaddr?codes=eth-btc&post=https://bitwage.com&redir=https://bitwage.com/getaddr&payer=bitwage': {
         type: 'requestAddress',
         assets: [
           { nativeCode: 'ETH', tokenCode: 'ETH' },
           { nativeCode: 'BTC', tokenCode: 'BTC' }
         ],
-        post: 'testpost.com',
-        redir: undefined,
+        post: 'https://bitwage.com',
+        redir: 'https://bitwage.com/getaddr?',
+        payer: 'bitwage'
+      },
+      'edge://reqaddr?codes=eth-btc&redir=https://bitwage.com/getaddr': {
+        type: 'requestAddress',
+        assets: [
+          { nativeCode: 'ETH', tokenCode: 'ETH' },
+          { nativeCode: 'BTC', tokenCode: 'BTC' }
+        ],
+        post: undefined,
+        redir: 'https://bitwage.com/getaddr?',
         payer: undefined
       },
-      'edge://reqaddr?codes=eth&post=testpost.com': {
+      'edge://reqaddr?codes=eth-btc&redir=https://bitwage.com/getaddr/': {
+        type: 'requestAddress',
+        assets: [
+          { nativeCode: 'ETH', tokenCode: 'ETH' },
+          { nativeCode: 'BTC', tokenCode: 'BTC' }
+        ],
+        post: undefined,
+        redir: 'https://bitwage.com/getaddr?',
+        payer: undefined
+      },
+      'edge://reqaddr?codes=eth-btc&redir=https://bitwage.com/getaddr?': {
+        type: 'requestAddress',
+        assets: [
+          { nativeCode: 'ETH', tokenCode: 'ETH' },
+          { nativeCode: 'BTC', tokenCode: 'BTC' }
+        ],
+        post: undefined,
+        redir: 'https://bitwage.com/getaddr?',
+        payer: undefined
+      },
+      'edge://reqaddr?codes=eth&post=https://bitwage.com': {
         type: 'requestAddress',
         assets: [{ nativeCode: 'ETH', tokenCode: 'ETH' }],
-        post: 'testpost.com',
+        post: 'https://bitwage.com',
         redir: undefined,
         payer: undefined
       },
-      'edge://reqaddr?codes=ETH&redir=testredir.com': {
+      'edge://reqaddr?codes=ETH&redir=https://bitwage.com/getaddr': {
         type: 'requestAddress',
         assets: [{ nativeCode: 'ETH', tokenCode: 'ETH' }],
         post: undefined,
-        redir: 'testredir.com',
+        redir: 'https://bitwage.com/getaddr?',
         payer: undefined
       },
-      'edge://reqaddr?codes=ETH_usdc-BTC-BTC_DOGE&redir=testredir.com&payer=testpayer': {
+      'edge://reqaddr?codes=ETH&redir=https://bitwage.com/getaddr&post=https://bitwage.com': {
+        type: 'requestAddress',
+        assets: [{ nativeCode: 'ETH', tokenCode: 'ETH' }],
+        post: 'https://bitwage.com',
+        redir: 'https://bitwage.com/getaddr?',
+        payer: undefined
+      },
+      'edge://reqaddr?codes=ETH_usdc-BTC-BTC_DOGE&redir=https://bitwage.com/getaddr?&payer=bitwage&post=https://bitwage.com': {
         type: 'requestAddress',
         assets: [
           { nativeCode: 'ETH', tokenCode: 'USDC' },
           { nativeCode: 'BTC', tokenCode: 'BTC' },
           { nativeCode: 'BTC', tokenCode: 'DOGE' }
         ],
-        post: undefined,
-        redir: 'testredir.com',
-        payer: 'testpayer'
+        post: 'https://bitwage.com',
+        redir: 'https://bitwage.com/getaddr?',
+        payer: 'bitwage'
       },
-      'reqaddr://?codes=ETH_usdc-BTC-BTC_DOGE-LTC-ETH_UNI&redir=testredir.com': {
+      'reqaddr://?codes=ETH_usdc-BTC-BTC_DOGE-LTC-ETH_UNI&post=https://bitwage.com&redir=https://bitwage.com/getaddr': {
         type: 'requestAddress',
         assets: [
           { nativeCode: 'ETH', tokenCode: 'USDC' },
@@ -70,8 +107,8 @@ describe('parseDeepLink', function () {
           { nativeCode: 'LTC', tokenCode: 'LTC' },
           { nativeCode: 'ETH', tokenCode: 'UNI' }
         ],
-        post: undefined,
-        redir: 'testredir.com',
+        post: 'https://bitwage.com',
+        redir: 'https://bitwage.com/getaddr?',
         payer: undefined
       }
     })

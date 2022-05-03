@@ -93,9 +93,10 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
     )) {
       const reqNativeCode = asset.nativeCode
       const reqTokenCode = asset.tokenCode
-      const pluginId = getPluginIdFromChainCode(reqNativeCode) ?? '' // Will never by empty string. Already filtered from for loop filter above
+      const pluginId = getPluginIdFromChainCode(reqNativeCode)
 
       // TODO: Fix WalletListModal's 'Add Token' functionality ignoring the allowedCurrencyCodes filter
+      // $FlowFixMe - pluginId is never null here
       const allowedCurrencyCode: EdgeTokenIdExtended[] = [{ pluginId: pluginId, currencyCode: reqTokenCode }]
       await Airship.show(bridge => (
         <WalletListModal bridge={bridge} headerTitle={s.strings.select_wallet} allowedCurrencyCodes={allowedCurrencyCode} showCreateWallet />
