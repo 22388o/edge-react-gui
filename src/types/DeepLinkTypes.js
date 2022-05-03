@@ -76,7 +76,7 @@ export type ReturnAddressLink = {
 
 export type RequestAddressLink = {
   type: 'requestAddress',
-  assets: Array<{ nativeCode: string, tokenCode?: string }>,
+  assets: Array<{ nativeCode: string, tokenCode: string }>,
   post?: string, // Either post or redir must be specified
   redir?: string,
   payer?: string
