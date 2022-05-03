@@ -5,6 +5,7 @@ import URL from 'url-parse'
 import ENV from '../../env.json'
 import { type DeepLink, type PromotionLink } from '../types/DeepLinkTypes.js'
 import { parseQuery, stringifyQuery } from './GuiPluginTools'
+import { enforceLastChar, omitLastChar } from './webUtils'
 
 /**
  * Parse a link into the app, identifying special
@@ -159,13 +160,14 @@ function parseDownloadLink(url: URL): PromotionLink {
 }
 
 /**
- * Parse a request for payment address link (BitPay).
- * TODO: Not fully spec'd yet.
+ * Parse a request for payment address link (BitWage).
  */
 function parseRequestAddress(url: URL): DeepLink {
   const query = parseQuery(url.query)
   const codesString = query.codes ?? undefined
-  const redir = query.redir ?? undefined
+
+  // Ensure redir doesn't end with a '/'
+  const redir = query.redir != null ? enforceLastChar(omitLastChar(query.redir, '/'), '?') : undefined
   const post = query.post ?? undefined
   const payer = query.payer ?? undefined
 
