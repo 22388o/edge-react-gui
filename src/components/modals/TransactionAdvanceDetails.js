@@ -7,6 +7,7 @@ import { type AirshipBridge } from 'react-native-airship'
 import SafariView from 'react-native-safari-view'
 
 import s from '../../locales/strings.js'
+import { openBrowserUri } from '../../util/webUtils.js'
 import { type Theme, type ThemeProps, cacheStyles, withTheme } from '../services/ThemeContext.js'
 import { EdgeText } from '../themed/EdgeText.js'
 import { ModalCloseArrow } from '../themed/ModalParts.js'
@@ -39,19 +40,7 @@ export class TransactionAdvanceDetailsComponent extends PureComponent<Props> {
   openUrl = () => {
     const { url } = this.props
     if (url == null || url === '') return
-    if (Platform.OS === 'ios') {
-      return SafariView.isAvailable()
-        .then(SafariView.show({ url }))
-        .catch(error => {
-          Linking.openURL(url)
-          console.log(error)
-        })
-    }
-    Linking.canOpenURL(url).then(supported => {
-      if (supported) {
-        Linking.openURL(url)
-      }
-    })
+    openBrowserUri(url)
   }
 
   openProveUrl = () => {

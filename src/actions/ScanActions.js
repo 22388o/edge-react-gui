@@ -11,7 +11,7 @@ import { ButtonsModal } from '../components/modals/common/ButtonsModal.js'
 import { ConfirmContinueModal } from '../components/modals/common/ConfirmContinueModal.js'
 import { paymentProtocolUriReceived } from '../components/modals/paymentProtocolUriReceived.js'
 import { WalletListModal } from '../components/modals/WalletListModal'
-import { Airship, showError } from '../components/services/AirshipInstance'
+import { Airship, showError, showWarning } from '../components/services/AirshipInstance'
 import { ADD_TOKEN, EXCHANGE_SCENE, PLUGIN_BUY, SEND } from '../constants/SceneKeys.js'
 import { getSpecialCurrencyInfo } from '../constants/WalletAndCurrencyConstants.js'
 import s from '../locales/strings.js'
@@ -20,10 +20,10 @@ import { config } from '../theme/appConfig.js'
 import { type RequestAddressLink, type ReturnAddressLink } from '../types/DeepLinkTypes'
 import type { Dispatch, GetState } from '../types/reduxTypes.js'
 import { Actions } from '../types/routerTypes.js'
-import { type GuiMakeSpendInfo } from '../types/types.js'
-import { getAssetSupportingWalletIds } from '../util/CurrencyWalletHelpers.js'
+import { type EdgeTokenIdExtended, type GuiMakeSpendInfo } from '../types/types'
 import { parseDeepLink } from '../util/DeepLinkParser.js'
-import { denominationToDecimalPlaces, zeroString } from '../util/utils.js'
+import { denominationToDecimalPlaces, getPluginIdFromChainCode, toListString, zeroString } from '../util/utils.js'
+import { openBrowserUri } from '../util/webUtils.js'
 import { launchDeepLink } from './DeepLinkingActions.js'
 
 /**
@@ -50,24 +50,22 @@ import { launchDeepLink } from './DeepLinkingActions.js'
 export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [walletId: string]: EdgeCurrencyWallet }, link: RequestAddressLink) => {
   dispatch({ type: 'DISABLE_SCAN' })
   const { assets, post, redir, payer } = link
-
   try {
     // Check if all required fields are provided in the request
-    if (assets.length === 0) throw new Error('No currencies found in request for payment address')
-    if (post == null && redir == null) throw new Error('Post or redir address not found in request for payment address')
-    if (post != null && redir != null) throw new Error('Both post and redir address were specified in request for payment address')
+    if (assets.length === 0) throw new Error(s.strings.bitwage_error_no_currencies_found)
+    if ((post == null || post === '') && (redir == null || redir === '')) throw new Error(s.strings.bitwage_error_post_redir)
   } catch (e) {
     showError(e.message)
   }
 
   // Present the request to the user for confirmation
-  const payerStr = payer == null ? '' : ` from ${payer}`
-  const assetsStr = assets.map(asset => asset.nativeCode).join(', ')
+  const payerStr = payer ?? s.strings.bitwage_application_fragment
+  const assetsStr = toListString(assets.map(asset => asset.nativeCode))
   const confirmResult = await Airship.show(bridge => (
     <ButtonsModal
       bridge={bridge}
-      title="Confirm request?"
-      message={sprintf('Got a request for payment address (%s)%s. Choose wallets for request?', assetsStr, payerStr)}
+      title={s.strings.bitwage_confirm_modal_title}
+      message={sprintf(s.strings.bitwage_confirm_modal_message, payerStr, assetsStr)}
       buttons={{
         yes: { label: s.strings.yes },
         no: { label: s.strings.no }
@@ -76,39 +74,31 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
   ))
 
   if (confirmResult === 'yes') {
-    // Verify if the user can satisfy the request
-    try {
-      // Check if the user owns a wallet with a matching native currency
-      const requestNativeAssets = assets.map(asset => asset.nativeCode)
-      const walletNativeAssets = Object.keys(currencyWallets).map(walletId => currencyWallets[walletId].currencyInfo.currencyCode)
-      if (!walletNativeAssets.some(walletAsset => requestNativeAssets.some(requestAsset => requestAsset.toUpperCase() === walletAsset.toUpperCase())))
-        throw new Error('No wallets found that support the native currencies listed in the request for payment address')
-
-      // Check if the user has enabled a specific token
-      let isTokenEnabled = false
-      for (const asset of assets) {
-        const supportingWalletIds = await getAssetSupportingWalletIds(currencyWallets, asset.nativeCode, asset.tokenCode)
-        if (supportingWalletIds.length > 0) isTokenEnabled = true
-      }
-      if (!isTokenEnabled)
-        throw new Error(
-          `No wallets found that have enabled a token listed in the request for payment address. Enable the token by long pressing the wallet and selecting 'Add / Edit Tokens'`
-        )
-    } catch (e) {
-      showError(e.message)
+    // Verify if the app can satisfy the request.
+    // Check if Edge supports at least some of the requested native assets
+    const reqNativeCodes = assets.map(asset => asset.nativeCode)
+    const unsupportedNativeCodes = reqNativeCodes.filter(reqNativeCode => getPluginIdFromChainCode(reqNativeCode) == null)
+    const unsupportedMessage = sprintf(s.strings.bitwage_error_unsupported_chains, toListString(unsupportedNativeCodes))
+    if (unsupportedNativeCodes.length === reqNativeCodes.length) {
+      showError(unsupportedMessage)
+      return
+    } else if (unsupportedNativeCodes.length > 0) {
+      showWarning(unsupportedMessage)
     }
 
-    // Show wallet picker(s)
+    // Show wallet picker(s) for supported assets
     const jsonPayloadMap: { [currencyAndTokenCode: string]: string } = {}
-    for (const asset of assets) {
-      const reqNativeCode = asset.nativeCode.toUpperCase()
-      const excludeWalletIds = Object.keys(currencyWallets).filter(
-        walletId => currencyWallets[walletId].currencyInfo.currencyCode.toUpperCase() !== reqNativeCode
-      )
-      const reqTokenCode = asset.tokenCode != null ? asset.tokenCode.toUpperCase() : asset.nativeCode.toUpperCase()
-      const allowedCurrencyCode: string[] = [reqTokenCode]
+    for (const asset of assets.filter(
+      asset => unsupportedNativeCodes == null || !unsupportedNativeCodes.some(unsupportedNC => unsupportedNC === asset.nativeCode)
+    )) {
+      const reqNativeCode = asset.nativeCode
+      const reqTokenCode = asset.tokenCode
+      const pluginId = getPluginIdFromChainCode(reqNativeCode) ?? '' // Will never by empty string. Already filtered from for loop filter above
+
+      // TODO: Fix WalletListModal's 'Add Token' functionality ignoring the allowedCurrencyCodes filter
+      const allowedCurrencyCode: EdgeTokenIdExtended[] = [{ pluginId: pluginId, currencyCode: reqTokenCode }]
       await Airship.show(bridge => (
-        <WalletListModal bridge={bridge} headerTitle={s.strings.select_wallet} excludeWalletIds={excludeWalletIds} allowedCurrencyCodes={allowedCurrencyCode} />
+        <WalletListModal bridge={bridge} headerTitle={s.strings.select_wallet} allowedCurrencyCodes={allowedCurrencyCode} showCreateWallet />
       )).then(async ({ walletId, currencyCode }) => {
         if (walletId != null && currencyCode != null) {
           const wallet = currencyWallets[walletId]
@@ -118,23 +108,16 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
       })
     }
 
-    // Handle POST or redirect
+    // Handle POST and redir
     if (Object.keys(jsonPayloadMap).length === 0) {
-      showError('No wallets selected for request for payment address')
+      showError(s.strings.bitwage_error_no_wallets_selected)
     } else {
-      if (redir != null && redir !== '') {
-        // Make sure this isn't some malicious link to cause an infinite redir loop
-        const deepLink = parseDeepLink(redir)
-        if (deepLink.type === 'requestAddress' && deepLink.redir != null) throw new Error(`Invalid 'redir' query in request for payment address`)
-
-        // handle like any other deeplink
-        dispatch(launchDeepLink(parseDeepLink(redir)))
-      } else if (post != null && redir !== '') {
+      if (post != null && post !== '') {
         // Setup and POST the JSON payload
-        // TODO: Fetch header and proper response error handling, after the POST recipient spec is defined
+        // TODO: Fetch header and proper response error handling, after the POST recipient spec is defined.
         const initOpts = {
           method: 'POST',
-          headers: { 'Content-Type': 'text/html' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(jsonPayloadMap)
         }
         try {
@@ -142,9 +125,19 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
         } catch (e) {
           showError(e.message)
         }
-      } else {
-        // Should not happen
-        throw new Error('Invalid request for payment address URI')
+      }
+      if (redir != null && redir !== '') {
+        // Make sure this isn't some malicious link to cause an infinite redir loop
+        const deepLink = parseDeepLink(redir)
+        if (deepLink.type === 'requestAddress' && deepLink.redir != null) throw new Error(s.strings.bitwage_error_invalid_redir)
+
+        // Create wallet address uri(s)
+        // TODO: Extend encodeUri() to generate the full bitcion:XXXX address instead of using raw addresses here
+        const addressUris = Object.keys(jsonPayloadMap).map(currencyAndTokenCode => `${currencyAndTokenCode}=${jsonPayloadMap[currencyAndTokenCode]}`)
+        const getAddrParams = addressUris.join('&')
+
+        // Append 'getAddr' and open link in browser
+        await openBrowserUri(`${redir}${getAddrParams}`)
       }
     }
   }

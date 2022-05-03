@@ -30,31 +30,3 @@ export const getAvailableBalance = (wallet: EdgeCurrencyWallet, tokenCode?: stri
   }
   return balance
 }
-
-/**
- * Returns all wallets that have a specific asset enabled
- */
-export const getAssetSupportingWalletIds = async (
-  currencyWallets: { [walletId: string]: EdgeCurrencyWallet },
-  nativeCurrencyCode: string,
-  tokenCode?: string
-): Promise<string[]> => {
-  const walletIds = Object.keys(currencyWallets)
-  const supportingWalletIds = []
-
-  for (const walletId of walletIds) {
-    const wallet = currencyWallets[walletId]
-    const walletNativeCurrencyCode = wallet.currencyInfo.currencyCode.toUpperCase()
-    const enabledTokenCodes = await wallet.getEnabledTokens()
-    if (
-      walletNativeCurrencyCode === nativeCurrencyCode.toUpperCase() &&
-      (tokenCode == null ||
-        (tokenCode != null &&
-          (tokenCode.toUpperCase() === walletNativeCurrencyCode ||
-            enabledTokenCodes.some(enabledTokenCode => tokenCode != null && enabledTokenCode.toUpperCase() === tokenCode.toUpperCase()))))
-    )
-      supportingWalletIds.push(walletId)
-  }
-
-  return supportingWalletIds
-}
