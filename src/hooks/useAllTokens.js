@@ -3,6 +3,7 @@
 import { type EdgeAccount, type EdgeTokenMap } from 'edge-core-js'
 
 import { useEffect, useState } from '../types/reactHooks'
+import { getAllTokens } from '../util/CurrencyInfoHelpers'
 
 type EdgeTokenMaps = { [pluginId: string]: EdgeTokenMap }
 
