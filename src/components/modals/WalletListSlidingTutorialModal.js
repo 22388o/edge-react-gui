@@ -24,7 +24,7 @@ export function WalletListSlidingTutorialModal(props: Props) {
       onCancel={() => bridge.resolve()}
       backgroundColor={theme.modal}
       borderRadius={theme.rem(1)}
-      padding={theme.rem(1)}
+      padding={theme.rem(0.5)}
       underlay={theme.tutorialModalUnderlay}
     >
       <ModalTitle>{s.strings.wallet_list_swipe_tutorial_title}</ModalTitle>
