@@ -1,6 +1,10 @@
 // @flow
 import { Linking, Platform } from 'react-native'
 import SafariView from 'react-native-safari-view'
+import URL from 'url-parse'
+
+import { type GuiPluginQuery } from '../types/GuiPluginTypes'
+import { parseQuery, stringifyQuery } from './GuiPluginTools'
 
 export type OpenBrowserUriParams = { uri: string, isSafariView: boolean }
 
@@ -30,6 +34,22 @@ export const openBrowserUri = ({ uri, isSafariView }: OpenBrowserUriParams) => {
       }
     })
   }
+}
+
+/**
+ * Adds query params onto a uri that potentially already has existing query
+ * params set.
+ *
+ * This function also cleans the end of the original uri, handling '/'
+ * terminated uri's
+ */
+export const stringifyUriAndQuery = (uri: string, query: GuiPluginQuery): string => {
+  const url = new URL(uri)
+  const existingQueries = parseQuery(url.query)
+
+  // Decide whether to use '&' or '?' to add new queries into the uri.
+  const joiningChar = Object.keys(existingQueries).length > 0 ? '&' : '?'
+  return `${omitLastChar(uri, '/')}${joiningChar}${stringifyQuery(query)}`
 }
 
 /**

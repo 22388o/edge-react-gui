@@ -55,15 +55,15 @@ const strings = {
   azteco_service_unavailable: 'Error contacting Azteco server. Please try again later.',
   azteco_btc_only: 'Please choose a BTC wallet and scan again.',
 
-  // Bitwage messages (request for payment address protocol)
-  bitwage_error_unsupported_chains: 'Edge does not support the following chains listed in the request: %s',
-  bitwage_error_invalid_redir: `Invalid 'redir' query in request for payment address`,
-  bitwage_error_no_currencies_found: 'No currencies found in request for payment address',
-  bitwage_error_no_wallets_selected: 'No wallets selected for request for payment address',
-  bitwage_error_post_redir: 'Post and redir address not found in request for payment address',
-  bitwage_application_fragment: 'An application',
-  bitwage_confirm_modal_title: 'Confirm request?',
-  bitwage_confirm_modal_message: '%1$s is requesting a payment address for %2$s. Choose wallets for request?',
+  // Request for Payment Address Protocol
+  rpa_error_unsupported_chains: 'Edge does not support the following chains listed in the request: %s',
+  rpa_error_invalid_redir: `Invalid 'redir' query in request for payment address`,
+  rpa_error_no_currencies_found: 'No currencies found in request for payment address',
+  rpa_error_no_wallets_selected: 'No wallets selected for request for payment address',
+  rpa_error_post_redir: 'Post and redir address not found in request for payment address',
+  rpa_application_fragment: 'An application',
+  rpa_confirm_modal_title: 'Confirm request?',
+  rpa_confirm_modal_message: '%1$s is requesting a payment address for %2$s. Choose wallets for request?',
 
   max_spend_unavailable_modal_title: 'Max Spend Unavailable',
   max_spend_unavailable_modal_message: 'Unable to calculate maximum spendable amount for currency %s. Please enter amount.',
