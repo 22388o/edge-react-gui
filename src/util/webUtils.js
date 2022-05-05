@@ -2,14 +2,17 @@
 import { Linking, Platform } from 'react-native'
 import SafariView from 'react-native-safari-view'
 
+export type OpenBrowserUriParams = { uri: string, isSafariView: boolean }
+
 /**
- * Uses the device's browser to open a URI
+ * Uses the device's browser to open a URI.
  * */
-export const openBrowserUri = (uri: string) => {
+export const openBrowserUri = ({ uri, isSafariView }: OpenBrowserUriParams) => {
   if (uri === '') {
     throw new Error('openBrowserUri: Empty uri prop')
   }
-  if (Platform.OS === 'ios') {
+  // Try to open a SafariView, if requested and supported
+  if (isSafariView && Platform.OS === 'ios') {
     return SafariView.isAvailable()
       .then(SafariView.show({ url: uri }))
       .catch(error => {
@@ -27,13 +30,6 @@ export const openBrowserUri = (uri: string) => {
       }
     })
   }
-}
-
-/**
- * Makes sure that the last character of the URI is as expected.
- */
-export const enforceLastChar = (uri: string, lastChar: string): string => {
-  return uri.substr(-1) === lastChar ? uri : uri + lastChar
 }
 
 /**
