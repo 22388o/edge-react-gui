@@ -5,6 +5,8 @@ import URL from 'url-parse'
 
 import { type UriQueryMap } from '../types/WebTypes'
 
+// TODO: Replace everything with the 'url-parse' library where possible
+
 export type OpenBrowserUriParams = { uri: string, isSafariView: boolean }
 
 /**

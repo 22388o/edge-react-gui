@@ -138,6 +138,7 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
       const deepLink = parseDeepLink(redir)
       if (deepLink.type === 'requestAddress' && deepLink.redir != null) throw new Error(s.strings.rpa_error_invalid_redir)
 
+      // TODO: Replace with the 'url-parse' library
       await openBrowserUri({ uri: stringifyUriAndQuery(redir, jsonPayloadMap), isSafariView: false })
     }
   }
