@@ -44,7 +44,7 @@ const loginscene = () => ({
   confirmFinishButton: element(by.text('Confirm & Finish')),
   usernameTooShortError: element(by.text('Minimum 3 characters')),
   usernameInvalidCharactersError: element(by.text('Must only be ascii characters')),
-  walletListScene: element(by.text('Slide wallets to show more options'))
+  walletListScene: element(by.text('Slide wallets or tap and hold on a wallet to see more options. Export transactions, Master Private Key, etc.'))
 })
 
 beforeEach(async () => {
@@ -119,8 +119,10 @@ describe('Edge GUI: ', () => {
     await loginScene.confirmFinishButton.tap()
 
     // ASSERT DASHBOARD SHOWN
-    await waitFor(findByText('Slide wallets to show more options')).toBeVisible().withTimeout(10000)
-    await expect(findByText('Slide wallets to show more options')).toBeVisible()
+    await waitFor(findByText('Slide wallets or tap and hold on a wallet to see more options. Export transactions, Master Private Key, etc.'))
+      .toBeVisible()
+      .withTimeout(10000)
+    await expect(findByText('Slide wallets or tap and hold on a wallet to see more options. Export transactions, Master Private Key, etc.')).toBeVisible()
   })
 
   xit('should be able to fix invalid inputs & create account', async () => {
@@ -209,7 +211,9 @@ describe('Edge GUI: ', () => {
     await loginScene.confirmFinishButton.tap()
 
     // ASSERT DASHBOARD SHOWN
-    await waitFor(findByText('Slide wallets to show more options')).toBeVisible().withTimeout(10000)
-    await expect(findByText('Slide wallets to show more options')).toBeVisible()
+    await waitFor(findByText('Slide wallets or tap and hold on a wallet to see more options. Export transactions, Master Private Key, etc.'))
+      .toBeVisible()
+      .withTimeout(10000)
+    await expect(findByText('Slide wallets or tap and hold on a wallet to see more options. Export transactions, Master Private Key, etc.')).toBeVisible()
   })
 })
