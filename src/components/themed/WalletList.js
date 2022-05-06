@@ -64,7 +64,6 @@ type Props = {|
   onRefresh?: () => void
 |}
 
-export function WalletList(props: Props) {
 export function WalletListComponent(props: Props) {
   const dispatch = useDispatch()
   const {

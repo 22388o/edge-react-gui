@@ -183,7 +183,7 @@ export const WalletListCurrencyRowComponent = (props: Props) => {
   )
 
   return (
-    <TouchableOpacity style={styles.row} onLongPress={onLongPress} onPress={handlePress}>
+    <TouchableOpacity style={styles.row} onLongPress={onLongPress} onPress={handlePress} ref={generateTestHook(walletId)}>
       <CurrencyIcon currencyCode={currencyCode} marginRem={1} sizeRem={2} walletId={walletId} />
       <View style={styles.nameColumn}>
         <View style={styles.currencyRow}>
