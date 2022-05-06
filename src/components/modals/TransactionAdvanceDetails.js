@@ -6,7 +6,7 @@ import { ScrollView, View } from 'react-native'
 import { type AirshipBridge } from 'react-native-airship'
 
 import s from '../../locales/strings.js'
-import { openBrowserUri } from '../../util/webUtils.js'
+import { openBrowserUri } from '../../util/WebUtils.js'
 import { type Theme, type ThemeProps, cacheStyles, withTheme } from '../services/ThemeContext.js'
 import { EdgeText } from '../themed/EdgeText.js'
 import { ModalCloseArrow } from '../themed/ModalParts.js'

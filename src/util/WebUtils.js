@@ -3,7 +3,7 @@ import { Linking, Platform } from 'react-native'
 import SafariView from 'react-native-safari-view'
 import URL from 'url-parse'
 
-import { type GuiPluginQuery } from '../types/GuiPluginTypes'
+import { type UriQueryMap } from '../types/WebTypes'
 import { parseQuery, stringifyQuery } from './GuiPluginTools'
 
 export type OpenBrowserUriParams = { uri: string, isSafariView: boolean }
@@ -43,7 +43,7 @@ export const openBrowserUri = ({ uri, isSafariView }: OpenBrowserUriParams) => {
  * This function also cleans the end of the original uri, handling '/'
  * terminated uri's
  */
-export const stringifyUriAndQuery = (uri: string, query: GuiPluginQuery): string => {
+export const stringifyUriAndQuery = (uri: string, query: UriQueryMap): string => {
   const url = new URL(uri)
   const existingQueries = parseQuery(url.query)
 

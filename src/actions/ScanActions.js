@@ -23,7 +23,7 @@ import { Actions } from '../types/routerTypes.js'
 import { type EdgeTokenIdExtended, type GuiMakeSpendInfo } from '../types/types'
 import { parseDeepLink } from '../util/DeepLinkParser.js'
 import { denominationToDecimalPlaces, getPluginIdFromChainCode, toListString, zeroString } from '../util/utils.js'
-import { openBrowserUri } from '../util/webUtils.js'
+import { openBrowserUri } from '../util/WebUtils.js'
 import { launchDeepLink } from './DeepLinkingActions.js'
 
 /**
