@@ -1,5 +1,6 @@
 // @flow
 import { div, toFixed } from 'biggystring'
+import { wrap } from 'cavy'
 import { type EdgeCurrencyWallet, type EdgeDenomination } from 'edge-core-js'
 import * as React from 'react'
 
@@ -24,7 +25,7 @@ type Props = {
   onPress: () => void
 }
 
-export const EditableAmountTile = (props: Props) => {
+export const EditableAmountTileComponent = (props: Props) => {
   let cryptoAmountSyntax
   let cryptoAmountStyle
   let fiatAmountSyntax
@@ -48,7 +49,7 @@ export const EditableAmountTile = (props: Props) => {
   } else {
     cryptoAmountSyntax = `0 ${displayDenomination.name}`
   }
-
+  console.log('Fiat', fiatAmountSyntax)
   return (
     <Tile type={lockInputs ? 'static' : 'editable'} title={title} onPress={lockInputs ? undefined : onPress}>
       <EdgeText style={[styles.amountText, cryptoAmountStyle]} minimumFontScale={0.3}>
@@ -67,3 +68,4 @@ const getStyles = cacheStyles((theme: Theme) => ({
     color: theme.deactivatedText
   }
 }))
+export const EditableAmountTile = wrap(EditableAmountTileComponent)

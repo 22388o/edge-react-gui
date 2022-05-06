@@ -10,6 +10,7 @@ import * as ReactNative from 'react-native'
 import Animated from 'react-native-reanimated'
 
 import { name as appName } from './app.json'
+import sendCryptoSpec from './specs/sendCryptoSpec.js'
 import { App } from './src/components/App.js'
 
 // See https://github.com/software-mansion/react-native-reanimated/issues/1794#issuecomment-898393331
@@ -20,7 +21,7 @@ const testHookStore = new TestHookStore()
 class AppWrapper extends Component<any, any> {
   render() {
     return (
-      <Tester specs={[]} store={testHookStore}>
+      <Tester specs={[sendCryptoSpec]} store={testHookStore}>
         <App />
       </Tester>
     )
