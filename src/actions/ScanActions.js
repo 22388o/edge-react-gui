@@ -23,7 +23,7 @@ import { Actions } from '../types/routerTypes.js'
 import { type EdgeTokenIdExtended, type GuiMakeSpendInfo } from '../types/types'
 import { parseDeepLink } from '../util/DeepLinkParser.js'
 import { denominationToDecimalPlaces, getPluginIdFromChainCode, toListString, zeroString } from '../util/utils.js'
-import { openBrowserUri } from '../util/WebUtils.js'
+import { openBrowserUri, stringifyUriAndQuery } from '../util/WebUtils'
 import { launchDeepLink } from './DeepLinkingActions.js'
 
 /**
@@ -95,7 +95,7 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
   }
 
   // Show wallet picker(s) for supported assets
-  const jsonPayloadMap: { [currencyAndTokenCode: string]: string } = {}
+  const jsonPayloadMap: { [currencyAndTokenCode: string]: string | null } = {}
   for (const assetAndPluginId of assetsAndPluginIds) {
     const pluginId = assetAndPluginId.pluginId
     const tokenCode = assetAndPluginId.tokenCode
@@ -107,6 +107,8 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
     )).then(async ({ walletId, currencyCode }) => {
       if (walletId != null && currencyCode != null) {
         const wallet = currencyWallets[walletId]
+
+        // TODO: Extend getReceiveAddress() to generate the full bitcion:XXXX address instead of using raw addresses here
         const { publicAddress } = await wallet.getReceiveAddress({ currencyCode })
         jsonPayloadMap[`${currencyWallets[walletId].currencyInfo.currencyCode}_${currencyCode}`] = publicAddress
       }
@@ -136,13 +138,7 @@ export const doRequestAddress = async (dispatch: Dispatch, currencyWallets: { [w
       const deepLink = parseDeepLink(redir)
       if (deepLink.type === 'requestAddress' && deepLink.redir != null) throw new Error(s.strings.rpa_error_invalid_redir)
 
-      // Create wallet address uri(s)
-      // TODO: Extend getReceiveAddress() to generate the full bitcion:XXXX address instead of using raw addresses here
-      const addressUris = Object.keys(jsonPayloadMap).map(currencyAndTokenCode => `${currencyAndTokenCode}=${jsonPayloadMap[currencyAndTokenCode]}`)
-      const getAddrParams = addressUris.join('&')
-
-      // Append 'getAddr' and open link in browser
-      await openBrowserUri({ uri: encodeURI(`${redir}${getAddrParams}`), isSafariView: false })
+      await openBrowserUri({ uri: stringifyUriAndQuery(redir, jsonPayloadMap), isSafariView: false })
     }
   }
 }
