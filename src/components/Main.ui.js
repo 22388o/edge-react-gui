@@ -106,6 +106,7 @@ import {
 } from '../constants/SceneKeys.js'
 import s from '../locales/strings.js'
 import { ifLoggedIn } from '../modules/UI/components/LoginStatus/LoginStatus.js'
+import { GuiPluginEnterAmountScene } from '../plugins/gui/scenes/EnterAmountScene'
 import { type Permission } from '../reducers/PermissionsReducer.js'
 import { connect } from '../types/reactRedux.js'
 import { Actions, withNavigation } from '../types/routerTypes.js'
@@ -435,7 +436,15 @@ export class MainComponent extends React.Component<Props> {
                 renderRightButton={<HeaderTextButton type="exit" placement="right" />}
                 hideTabBar
               />
+              <Scene
+                key="guiPluginEnterAmount"
+                component={withNavigation(ifLoggedIn(GuiPluginEnterAmountScene))}
+                navTransparent
+                renderLeftButton={renderPluginBackButton()}
+                hideTabBar
+              />
             </Stack>
+
             <Stack key={PLUGIN_SELL}>
               <Scene
                 key={PLUGIN_SELL}

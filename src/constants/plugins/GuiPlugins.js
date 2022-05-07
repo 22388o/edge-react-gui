@@ -55,11 +55,12 @@ export const guiPlugins: { [pluginId: string]: GuiPlugin } = {
     displayName: 'Banxa',
     permissions: ['camera']
   },
-  simplex: {
-    pluginId: 'simplex',
+  creditcard: {
+    pluginId: 'creditcard',
     storeId: 'co.edgesecure.simplex',
-    baseUri: hostedUri + 'co.edgesecure.simplex/index.html',
+    baseUri: '',
     lockUriPath: true,
+    nativePlugin: true,
     displayName: 'Simplex'
   },
   wyre: {

@@ -1,7 +1,7 @@
 [
   {
     "id": "simplex",
-    "pluginId": "simplex",
+    "pluginId": "creditcard",
     "paymentTypes": [
       "credit"
     ],

@@ -265,6 +265,9 @@ export const OutlinedTextInput: Class<OutlinedTextInputRef> = forwardRef((props:
   // Character limit
   const charLimitLabel = maxLength === undefined ? '' : `${maxLength - value.length}`
 
+  const numpad = props.keyboardType === 'decimal-pad' || props.keyboardType === 'decimal'
+  const textStyle = numpad ? styles.numberInput : styles.textInput
+
   return (
     <TouchableWithoutFeedback onPress={() => focus()}>
       <View style={[styles.container, containerStyle]}>
@@ -303,7 +306,7 @@ export const OutlinedTextInput: Class<OutlinedTextInputRef> = forwardRef((props:
           autoFocus={autoFocus}
           multiline={multiline}
           selectionColor={hasError ? theme.dangerText : theme.outlineTextInputTextColor}
-          style={[styles.textInput, textInputStyle]}
+          style={[textStyle, textInputStyle]}
           textAlignVertical="top"
           value={value}
           secureTextEntry={hidePassword}
@@ -378,6 +381,13 @@ const getStyles = cacheStyles(theme => {
       color: theme.outlineTextInputTextColor,
       fontFamily: theme.fontFaceDefault,
       fontSize: theme.rem(1),
+      padding: 0
+    },
+    numberInput: {
+      alignSelf: 'stretch',
+      color: theme.outlineTextInputTextColor,
+      fontFamily: theme.fontFaceDefault,
+      fontSize: theme.rem(1.5),
       padding: 0
     },
 

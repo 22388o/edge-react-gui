@@ -160,6 +160,16 @@ export type ParamList = {
   fioSentRequestDetails: {|
     selectedFioSentRequest: FioRequest
   |},
+  guiPluginEnterAmount: {|
+    headerTitle: string,
+    onSubmit: (lastUsed: number) => void,
+    label1: string,
+    label2: string,
+    onChangeText: (fieldNum: number, value: string) => void,
+    convertValue: (sourceFieldNum: number, value: string) => Promise<string>,
+    initialAmount1?: string,
+    headerIconUri?: string
+  |},
   manageTokens: {|
     walletId: string
   |},
