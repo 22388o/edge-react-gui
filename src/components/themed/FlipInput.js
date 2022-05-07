@@ -1,13 +1,15 @@
 // @flow
-
 import Clipboard from '@react-native-community/clipboard'
 import { div, eq, mul } from 'biggystring'
+// import { hook } from 'cavy'
 import * as React from 'react'
 import { type Event, Animated, Platform, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import Menu, { MenuOption, MenuOptions, MenuTrigger, renderers } from 'react-native-popup-menu'
 import Reamimated, { useAnimatedStyle, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
 
 import { Fontello } from '../../assets/vector'
+// import { type TestProps } from '../../types/reactRedux.js'
+// import { type TestReferee } from '../../hooks/useTestReferee.js'
 import { formatNumberInput, prettifyNumber, truncateDecimals, truncateDecimalsPeriod } from '../../locales/intl.js'
 import s from '../../locales/strings.js'
 import { forwardRef } from '../../types/reactHooks.js'
@@ -496,6 +498,7 @@ export class FlipInputComponent extends React.PureComponent<Props, State> {
             editable={isEditable}
             onSubmitEditing={onNext}
             inputAccessoryViewID={inputAccessoryViewID || null}
+            // testReferee={this.props.useTestReferee('FlipInput.SendEnterFiatAmount')}
           />
         </View>
       </TouchableWithoutFeedback>

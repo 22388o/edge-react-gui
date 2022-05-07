@@ -2,6 +2,7 @@
 
 import { add, gt } from 'biggystring'
 import * as React from 'react'
+// import { TouchableOpacity, View } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import { sprintf } from 'sprintf-js'
