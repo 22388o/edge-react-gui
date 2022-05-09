@@ -2,7 +2,7 @@
 
 import { useCavy, wrap } from 'cavy'
 import * as React from 'react'
-import { RefreshControl, SectionList } from 'react-native'
+import { SectionList } from 'react-native'
 
 import { selectWallet } from '../../actions/WalletActions.js'
 import { useAllTokens } from '../../hooks/useAllTokens.js'
@@ -23,7 +23,6 @@ import { WalletListCreateRow } from './WalletListCreateRow.js'
 import { WalletListCurrencyRow } from './WalletListCurrencyRow.js'
 import { WalletListLoadingRow } from './WalletListLoadingRow.js'
 import { WalletListSectionHeader } from './WalletListSectionHeader.js'
-import { WalletListSwipeRow } from './WalletListSwipeRow.js'
 
 export const alphabeticalSort = (itemA: string, itemB: string) => (itemA < itemB ? -1 : itemA > itemB ? 1 : 0)
 
@@ -53,18 +52,13 @@ type Props = {|
   filterActivation?: boolean,
 
   // Visuals:
-  footer?: React.Node,
-  header?: React.Node,
-  isModal?: boolean,
   marginRem?: number | number[],
   searching: boolean,
   searchText: string,
   showCreateWallet?: boolean,
-  showSlidingTutorial?: boolean,
 
   // Callbacks:
-  onPress?: (walletId: string, currencyCode: string) => void,
-  onRefresh?: () => void
+  onPress?: (walletId: string, currencyCode: string) => void
 |}
 
 export function WalletListComponent(props: Props) {
@@ -77,18 +71,13 @@ export function WalletListComponent(props: Props) {
     filterActivation,
 
     // Visuals:
-    footer,
-    header,
-    isModal,
     marginRem,
     searching,
     searchText,
     showCreateWallet,
-    showSlidingTutorial,
 
     // Callbacks:
-    onPress,
-    onRefresh
+    onPress
   } = props
 
   const theme = useTheme()
@@ -285,24 +274,15 @@ export function WalletListComponent(props: Props) {
     const guiWallet = wallets[walletId]
 
     if (guiWallet == null || account.currencyWallets[walletId] == null) {
-      if (isModal) {
-        return <WalletListLoadingRow />
-      }
-      return <WalletListSwipeRow currencyCode="" isToken={false} walletId={walletId} />
+      return <WalletListLoadingRow />
     } else {
       const isToken = guiWallet.currencyCode !== data.item.fullCurrencyCode
       const walletCodesArray = data.item.fullCurrencyCode != null ? data.item.fullCurrencyCode.split('-') : []
       const currencyCode = isToken ? walletCodesArray[1] : walletCodesArray[0]
 
-      if (isModal) {
-        return <WalletListCurrencyRow currencyCode={currencyCode} walletId={walletId} onPress={handlePress} />
-      }
-
-      return <WalletListSwipeRow currencyCode={currencyCode} isToken={isToken} openTutorial={data.index === 0 && showSlidingTutorial} walletId={walletId} />
+      return <WalletListCurrencyRow currencyCode={currencyCode} walletId={walletId} onPress={handlePress} />
     }
   }
-
-  const renderRefreshControl = () => <RefreshControl refreshing={false} onRefresh={onRefresh} tintColor={theme.searchListRefreshControlIndicator} />
 
   const renderSectionHeader = (section: { section: Section }) => <WalletListSectionHeader title={section.section.title} />
 
@@ -351,7 +331,7 @@ export function WalletListComponent(props: Props) {
 
   let isSectionList = false
   let walletOnlyList = []
-  if (isModal && !searching && searchText.length === 0 && mostRecentWallets.length > 1) {
+  if (!searching && searchText.length === 0 && mostRecentWallets.length > 1) {
     walletOnlyList = walletList.filter(item => item.id)
     if (walletOnlyList.length > 4) {
       isSectionList = true
@@ -362,8 +342,6 @@ export function WalletListComponent(props: Props) {
     return (
       <SectionList
         keyboardShouldPersistTaps="handled"
-        ListFooterComponent={footer}
-        ListHeaderComponent={header}
         renderItem={renderRow}
         renderSectionHeader={renderSectionHeader}
         sections={getSection(walletList, walletOnlyList.length)}
@@ -372,18 +350,51 @@ export function WalletListComponent(props: Props) {
     )
   }
 
-  return (
-    <FlatList
-      contentOffset={{ x: 0, y: !searching && !isModal ? theme.rem(4.5) : 0 }}
-      data={walletList}
-      keyboardShouldPersistTaps="handled"
-      ListFooterComponent={footer}
-      ListHeaderComponent={header}
-      refreshControl={isModal ? undefined : renderRefreshControl()}
-      renderItem={renderRow}
-      ref={generateTestHook('WalletList.WalletId')}
-    />
-  )
+  return <FlatList data={walletList} keyboardShouldPersistTaps="handled" renderItem={renderRow} style={margin} ref={generateTestHook('WalletList.WalletId')} />
 }
 
 export const WalletList = wrap(WalletListComponent)
+
+type FilterDetailsType = {
+  // For searching:
+  name: string,
+  currencyCode: string,
+  currencyName: string,
+
+  // For filtering:
+  pluginId: string,
+  tokenId?: string
+}
+
+function checkFilterWallet(details: FilterDetailsType, filterText: string, allowedAssets?: EdgeTokenId[], excludeAssets?: EdgeTokenId[]): boolean {
+  const { pluginId, tokenId } = details
+  if (allowedAssets != null && !hasAsset(allowedAssets, { pluginId, tokenId })) {
+    return false
+  }
+
+  if (excludeAssets != null && hasAsset(excludeAssets, { pluginId, tokenId })) {
+    return false
+  }
+
+  if (filterText === '') {
+    return true
+  }
+
+  const currencyCode = details.currencyCode.toLowerCase()
+  const walletName = normalizeForSearch(details.name)
+  const currencyName = normalizeForSearch(details.currencyName)
+  const filterString = normalizeForSearch(filterText)
+  return walletName.includes(filterString) || currencyCode.includes(filterString) || currencyName.includes(filterString)
+}
+
+/**
+ * Returns true if the asset array includes the given asset.
+ */
+function hasAsset(assets: EdgeTokenId[], target: EdgeTokenId): boolean {
+  for (const asset of assets) {
+    if (asset.pluginId === target.pluginId && asset.tokenId === target.tokenId) {
+      return true
+    }
+  }
+  return false
+}
