@@ -1,7 +1,8 @@
 // @flow
 
+import { useCavy, wrap } from 'cavy'
 import * as React from 'react'
-import { FlatList, RefreshControl, SectionList } from 'react-native'
+import { RefreshControl, SectionList } from 'react-native'
 
 import { selectWallet } from '../../actions/WalletActions.js'
 import { useAllTokens } from '../../hooks/useAllTokens.js'
@@ -10,6 +11,7 @@ import s from '../../locales/strings'
 import { getExchangeDenominationFromState } from '../../selectors/DenominationSelectors.js'
 import { calculateFiatBalance } from '../../selectors/WalletSelectors.js'
 import { useMemo } from '../../types/reactHooks.js'
+import { FlatList } from '../../types/reactNative.js'
 import { useDispatch, useSelector } from '../../types/reactRedux.js'
 import type { CreateTokenType, CreateWalletType, FlatListItem, GuiWallet } from '../../types/types.js'
 import { type EdgeTokenId, asSafeDefaultGuiWallet } from '../../types/types.js'
@@ -65,7 +67,7 @@ type Props = {|
   onRefresh?: () => void
 |}
 
-export function WalletList(props: Props) {
+export function WalletListComponent(props: Props) {
   const dispatch = useDispatch()
   const {
     // Filtering:
@@ -90,6 +92,7 @@ export function WalletList(props: Props) {
   } = props
 
   const theme = useTheme()
+  const generateTestHook = useCavy()
   const margin = sidesToMargin(mapSides(fixSides(marginRem, 0), theme.rem))
 
   const handlePress = useMemo(
@@ -378,51 +381,9 @@ export function WalletList(props: Props) {
       ListHeaderComponent={header}
       refreshControl={isModal ? undefined : renderRefreshControl()}
       renderItem={renderRow}
-      style={margin}
+      ref={generateTestHook('WalletList.WalletId')}
     />
   )
 }
 
-type FilterDetailsType = {
-  // For searching:
-  name: string,
-  currencyCode: string,
-  currencyName: string,
-
-  // For filtering:
-  pluginId: string,
-  tokenId?: string
-}
-
-function checkFilterWallet(details: FilterDetailsType, filterText: string, allowedAssets?: EdgeTokenId[], excludeAssets?: EdgeTokenId[]): boolean {
-  const { pluginId, tokenId } = details
-  if (allowedAssets != null && !hasAsset(allowedAssets, { pluginId, tokenId })) {
-    return false
-  }
-
-  if (excludeAssets != null && hasAsset(excludeAssets, { pluginId, tokenId })) {
-    return false
-  }
-
-  if (filterText === '') {
-    return true
-  }
-
-  const currencyCode = details.currencyCode.toLowerCase()
-  const walletName = normalizeForSearch(details.name)
-  const currencyName = normalizeForSearch(details.currencyName)
-  const filterString = normalizeForSearch(filterText)
-  return walletName.includes(filterString) || currencyCode.includes(filterString) || currencyName.includes(filterString)
-}
-
-/**
- * Returns true if the asset array includes the given asset.
- */
-function hasAsset(assets: EdgeTokenId[], target: EdgeTokenId): boolean {
-  for (const asset of assets) {
-    if (asset.pluginId === target.pluginId && asset.tokenId === target.tokenId) {
-      return true
-    }
-  }
-  return false
-}
+export const WalletList = wrap(WalletListComponent)
