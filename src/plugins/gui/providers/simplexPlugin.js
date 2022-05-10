@@ -1,49 +1,69 @@
 // @flow
-// import { div, mul } from 'biggystring'
+import { add, div, mul, sub } from 'biggystring'
 
-// import { type EdgeTokenIdExtended } from '../../../types/types'
 import {
-  type MakePluginParams,
-  type PaymentAssetMap,
-  type PaymentGetQuoteParams,
-  type PaymentPlugin,
-  type PaymentPluginFactory,
-  type PaymentQuote
-} from '../nativeGuiPluginTypes'
-
+  type FiatProviderApproveQuoteParams,
+  type FiatProviderAssetMap,
+  type FiatProviderFactory,
+  type FiatProviderGetQuoteParams,
+  type FiatProviderQuote
+} from '../fiatProviderTypes'
 const pluginId = 'simplex'
 
-const allowedCurrencyCodes: PaymentAssetMap = {
+const allowedCurrencyCodes: FiatProviderAssetMap = {
   bitcoin: { BTC: true },
   ethereum: { ETH: true },
   bitcoincash: { BCH: true },
   ripple: { XRP: true }
 }
 
-export const simplexPlugin: PaymentPluginFactory = {
-  pluginId,
-  pluginTypes: { creditcard: true },
-  makePlugin: async (params: MakePluginParams) => {
-    const paymentPlugin: PaymentPlugin = {
-      pluginId,
-      getSupportedAssets: async (): Promise<PaymentAssetMap> => allowedCurrencyCodes,
-      getQuote: async (params: PaymentGetQuoteParams): Promise<PaymentQuote> => {
-        const paymentQuote: PaymentQuote = {
-          pluginId,
-          isEstimate: false,
-          fiatCurrencyCode: 'iso:USD',
-          tokenId: { pluginId: 'bitcoin', currencyCode: 'BTC' },
-          fiatAmount: '4',
-          exchangeAmount: '3',
-          direction: 'buy',
+export const simplexProvider: FiatProviderFactory = async () => {
+  const out = {
+    pluginId,
+    getSupportedAssets: async (): Promise<FiatProviderAssetMap> => allowedCurrencyCodes,
+    getQuote: async (params: FiatProviderGetQuoteParams): Promise<FiatProviderQuote> => {
+      const { tokenId, fiatCurrencyCode, exchangeAmount, amountType, direction } = params
 
-          expirationDate: new Date(),
-          approveQuote: async () => {},
-          closeQuote: async () => {}
+      const { currencyCode } = tokenId
+      const currencyPluginId = tokenId.pluginId
+      const exchangeRate = { bitcoin: '43123', ethereum: '2212' }
+      const fee = '0.025'
+
+      if (currencyCode == null) throw new Error('simplexProvider: Missing tokenId.currencyCode')
+
+      let isEstimate = false
+      let fiatAmount = '0'
+      let cryptoAmount = '0'
+      if (direction === 'buy') {
+        isEstimate = true
+        if (amountType === 'crypto') {
+          cryptoAmount = exchangeAmount
+          const feeMultiplier = add('1', fee)
+          fiatAmount = mul(exchangeRate[currencyPluginId], exchangeAmount)
+          fiatAmount = mul(fiatAmount, feeMultiplier)
+        } else {
+          fiatAmount = exchangeAmount
+          const feeMultiplier = sub('1', fee)
+          cryptoAmount = div(exchangeAmount, exchangeRate[currencyPluginId], 16)
+          cryptoAmount = mul(cryptoAmount, feeMultiplier)
         }
-        return paymentQuote
+      } else {
+        throw new Error('simplexProvider: Sell unsupported')
       }
+
+      const paymentQuote: FiatProviderQuote = {
+        tokenId,
+        isEstimate,
+        fiatCurrencyCode,
+        fiatAmount,
+        cryptoAmount,
+        direction,
+        expirationDate: new Date(Date.now() + 60000),
+        approveQuote: async (params: FiatProviderApproveQuoteParams): Promise<void> => {},
+        closeQuote: async (): Promise<void> => {}
+      }
+      return paymentQuote
     }
-    return paymentPlugin
   }
+  return out
 }

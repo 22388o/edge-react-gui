@@ -5,6 +5,7 @@ import * as React from 'react'
 import * as Flux from 'react-native-router-flux'
 
 import type { ExchangedFlipInputAmounts } from '../components/themed/ExchangedFlipInput.js'
+import { type FiatPluginEnterAmountResponse } from '../plugins/gui/fiatPluginTypes.js'
 import { type ChangeQuoteRequest, type StakePolicy, type StakePosition } from '../plugins/stake-plugins'
 import { type GuiPlugin, type GuiPluginQuery } from './GuiPluginTypes.js'
 import {
@@ -162,10 +163,10 @@ export type ParamList = {
   |},
   guiPluginEnterAmount: {|
     headerTitle: string,
-    onSubmit: (lastUsed: number) => void,
+    onSubmit: (response: FiatPluginEnterAmountResponse) => Promise<void>,
     label1: string,
     label2: string,
-    onChangeText: (fieldNum: number, value: string) => void,
+    onChangeText: (fieldNum: number, value: string) => Promise<void>,
     convertValue: (sourceFieldNum: number, value: string) => Promise<string>,
     initialAmount1?: string,
     headerIconUri?: string

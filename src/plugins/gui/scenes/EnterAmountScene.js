@@ -16,7 +16,7 @@ type Props = {
   route: RouteProp<'guiPluginEnterAmount'>
 }
 
-export const GuiPluginEnterAmountScene = memo((props: Props): React.Node => {
+export const FiatPluginEnterAmountScene = memo((props: Props): React.Node => {
   const theme = useTheme()
   const styles = getStyles(theme)
   const { headerIconUri, headerTitle, onSubmit, convertValue, onChangeText, label1, label2, initialAmount1 = '' } = props.route.params
@@ -34,21 +34,27 @@ export const GuiPluginEnterAmountScene = memo((props: Props): React.Node => {
     headerIcon = <Image style={styles.icon} source={{ uri: headerIconUri }} />
   }
 
-  const handleChangeText1 = useCallback((value: string) => {
-    lastUsed.current = 1
-    onChangeText(1, value)
-    setValue1(value)
-    convertValue(1, value).then(v => setValue2(v))
-  }, [])
-  const handleChangeText2 = useCallback((value: string) => {
-    lastUsed.current = 2
-    onChangeText(2, value)
-    setValue2(value)
-    convertValue(2, value).then(v => setValue1(v))
-  }, [])
+  const handleChangeText1 = useCallback(
+    (value: string) => {
+      lastUsed.current = 1
+      onChangeText(1, value)
+      setValue1(value)
+      convertValue(1, value).then(v => setValue2(v))
+    },
+    [convertValue, onChangeText]
+  )
+  const handleChangeText2 = useCallback(
+    (value: string) => {
+      lastUsed.current = 2
+      onChangeText(2, value)
+      setValue2(value)
+      convertValue(2, value).then(v => setValue1(v))
+    },
+    [convertValue, onChangeText]
+  )
   const handleSubmit = useCallback(() => {
-    onSubmit(lastUsed.current)
-  }, [])
+    onSubmit({ lastUsed: lastUsed.current, value1, value2 })
+  }, [onSubmit, value1, value2])
 
   return (
     <SceneWrapper scroll background="theme">
